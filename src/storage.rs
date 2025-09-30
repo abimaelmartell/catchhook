@@ -102,3 +102,105 @@ impl Storage {
         Ok(out)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::sync::atomic::Ordering;
+    use tempfile::TempDir;
+
+    fn create_test_storage() -> (Storage, TempDir) {
+        let temp_dir = TempDir::new().unwrap();
+        let storage = Storage::new(temp_dir.path(), 100).unwrap();
+        (storage, temp_dir)
+    }
+
+    fn create_test_request(id: u64) -> StoredRequest {
+        StoredRequest {
+            id,
+            ts_ms: 1234567890 + id as i64,
+            method: "POST".to_string(),
+            path: format!("/webhook/{}", id),
+            headers: vec![("content-type".to_string(), "application/json".to_string())],
+            body: format!("{{\"test\": {}}}", id).into_bytes(),
+        }
+    }
+
+    #[test]
+    fn test_storage_creation() {
+        let (storage, _temp_dir) = create_test_storage();
+        assert_eq!(storage.next_id().load(Ordering::SeqCst), 0);
+    }
+
+    #[test]
+    fn test_insert_and_retrieve() {
+        let (storage, _temp_dir) = create_test_storage();
+        let request = create_test_request(1);
+        
+        storage.insert(&request).unwrap();
+        
+        let latest = storage.latest(10).unwrap();
+        assert_eq!(latest.len(), 1);
+        assert_eq!(latest[0].id, 1);
+        assert_eq!(latest[0].method, "POST");
+        assert_eq!(latest[0].path, "/webhook/1");
+    }
+
+    #[test]
+    fn test_multiple_inserts() {
+        let (storage, _temp_dir) = create_test_storage();
+        
+        for i in 1..=5 {
+            let request = create_test_request(i);
+            storage.insert(&request).unwrap();
+        }
+        
+        let latest = storage.latest(10).unwrap();
+        assert_eq!(latest.len(), 5);
+        
+        assert_eq!(latest[0].id, 5);
+        assert_eq!(latest[4].id, 1);
+    }
+
+    #[test]
+    fn test_pruning_when_exceeding_max_reqs() {
+        let temp_dir = TempDir::new().unwrap();
+        let storage = Storage::new(temp_dir.path(), 3).unwrap();
+        
+        for i in 1..=5 {
+            let request = create_test_request(i);
+            storage.insert(&request).unwrap();
+        }
+        
+        let latest = storage.latest(10).unwrap();
+        assert!(latest.len() <= 3);
+        
+        let ids: Vec<u64> = latest.iter().map(|r| r.id).collect();
+        assert!(ids.contains(&5));
+        assert!(ids.contains(&4));
+        assert!(ids.contains(&3));
+    }
+
+    #[test]
+    fn test_empty_storage() {
+        let (storage, _temp_dir) = create_test_storage();
+        let latest = storage.latest(10).unwrap();
+        assert_eq!(latest.len(), 0);
+    }
+
+    #[test]
+    fn test_limit_functionality() {
+        let (storage, _temp_dir) = create_test_storage();
+        
+        for i in 1..=10 {
+            let request = create_test_request(i);
+            storage.insert(&request).unwrap();
+        }
+        
+        let latest = storage.latest(5).unwrap();
+        assert_eq!(latest.len(), 5);
+        
+        let ids: Vec<u64> = latest.iter().map(|r| r.id).collect();
+        assert_eq!(ids, vec![10, 9, 8, 7, 6]);
+    }
+}
