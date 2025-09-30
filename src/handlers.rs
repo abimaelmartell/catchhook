@@ -50,7 +50,6 @@ pub async fn post_webhook(
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
     let id = storage.next_id().fetch_add(1, Ordering::SeqCst) + 1;
 
-    // std timestamp (no chrono dep)
     let now = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .map_err(internal_err)?

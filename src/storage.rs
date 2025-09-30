@@ -37,19 +37,16 @@ impl Storage {
             Database::create(db_path)?
         };
 
-        // Initialize table if it doesn't exist and bootstrap last ID
         let mut last_id = 0;
         
-        // First, try to create the table (this will succeed if it doesn't exist, or do nothing if it does)
         {
             let tx = db.begin_write()?;
             {
-                let _table = tx.open_table(REQS)?; // This creates the table if it doesn't exist
-            } // Drop the table borrow here
+                let _table = tx.open_table(REQS)?;
+            }
             tx.commit()?;
         }
         
-        // Now read the last ID
         {
             let tx = db.begin_read()?;
             let table = tx.open_table(REQS)?;
@@ -70,22 +67,17 @@ impl Storage {
         }
         tx.commit()?;
 
-        // Prune oldest entries if we exceed max_reqs
-        // Use separate transaction to avoid borrowing conflicts
         let tx_prune = self.db.begin_write()?;
         {
             let mut table = tx_prune.open_table(REQS)?;
             let len: u64 = table.len()?;
             if (len as usize) > self.max_reqs {
-                // First, collect the key to remove (immutable borrow)
                 let key_to_remove = {
                     let mut it = table.range(0..)?;
                     it.next()
                         .and_then(|result| result.ok())
                         .map(|(k, _)| k.value())
                 };
-                
-                // Then remove it (mutable borrow)
                 if let Some(key) = key_to_remove {
                     table.remove(key)?;
                 }
