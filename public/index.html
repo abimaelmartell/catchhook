@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Webhook Testing Tool</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1>Webhook Testing Tool</h1>
+      <div class="url-container">
+        <span class="url-label">Your Webhook URL:</span>
+        <code class="url-text" id="webhookUrl">https://your-domain.com/api/webhooks</code>
+        <button class="copy-button" id="copyButton">Copy</button>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <div class="sidebar-header">
+          <h2>Recent Requests</h2>
+          <div class="sidebar-controls">
+            <button class="refresh-button" id="refreshButton" title="Refresh requests">🔄</button>
+            <span class="auto-refresh-indicator" id="autoRefreshIndicator">●</span>
+          </div>
+        </div>
+        <ul class="webhook-list" id="webhookList">
+          <!-- Webhooks will be inserted here -->
+        </ul>
+      </div>
+
+      <!-- Detail Panel -->
+      <div class="detail-panel" id="detailPanel">
+        <div class="empty-state">
+          <div class="empty-icon">📡</div>
+          <p>Select a webhook to view details</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
