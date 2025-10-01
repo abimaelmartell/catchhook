@@ -33,7 +33,7 @@ mod tests {
 
         let json = serde_json::to_string(&request).unwrap();
         let deserialized: StoredRequest = serde_json::from_str(&json).unwrap();
-        
+
         assert_eq!(request.id, deserialized.id);
         assert_eq!(request.method, deserialized.method);
         assert_eq!(request.path, deserialized.path);

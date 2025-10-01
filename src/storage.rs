@@ -2,7 +2,7 @@ use crate::models::StoredRequest;
 use redb::{Database, ReadableDatabase, ReadableTable, ReadableTableMetadata, TableDefinition};
 use std::{
     path::Path as FsPath,
-    sync::{atomic::AtomicU64, Arc},
+    sync::{Arc, atomic::AtomicU64},
 };
 
 const REQS: TableDefinition<u64, &[u8]> = TableDefinition::new("reqs");
@@ -38,7 +38,7 @@ impl Storage {
         };
 
         let mut last_id = 0;
-        
+
         {
             let tx = db.begin_write()?;
             {
@@ -46,7 +46,7 @@ impl Storage {
             }
             tx.commit()?;
         }
-        
+
         {
             let tx = db.begin_read()?;
             let table = tx.open_table(REQS)?;
@@ -54,7 +54,7 @@ impl Storage {
                 last_id = k.value();
             }
         }
-        
+
         Ok((Arc::new(db), last_id))
     }
 
@@ -136,9 +136,9 @@ mod tests {
     fn test_insert_and_retrieve() {
         let (storage, _temp_dir) = create_test_storage();
         let request = create_test_request(1);
-        
+
         storage.insert(&request).unwrap();
-        
+
         let latest = storage.latest(10).unwrap();
         assert_eq!(latest.len(), 1);
         assert_eq!(latest[0].id, 1);
@@ -149,15 +149,15 @@ mod tests {
     #[test]
     fn test_multiple_inserts() {
         let (storage, _temp_dir) = create_test_storage();
-        
+
         for i in 1..=5 {
             let request = create_test_request(i);
             storage.insert(&request).unwrap();
         }
-        
+
         let latest = storage.latest(10).unwrap();
         assert_eq!(latest.len(), 5);
-        
+
         assert_eq!(latest[0].id, 5);
         assert_eq!(latest[4].id, 1);
     }
@@ -166,15 +166,15 @@ mod tests {
     fn test_pruning_when_exceeding_max_reqs() {
         let temp_dir = TempDir::new().unwrap();
         let storage = Storage::new(temp_dir.path(), 3).unwrap();
-        
+
         for i in 1..=5 {
             let request = create_test_request(i);
             storage.insert(&request).unwrap();
         }
-        
+
         let latest = storage.latest(10).unwrap();
         assert!(latest.len() <= 3);
-        
+
         let ids: Vec<u64> = latest.iter().map(|r| r.id).collect();
         assert!(ids.contains(&5));
         assert!(ids.contains(&4));
@@ -191,15 +191,15 @@ mod tests {
     #[test]
     fn test_limit_functionality() {
         let (storage, _temp_dir) = create_test_storage();
-        
+
         for i in 1..=10 {
             let request = create_test_request(i);
             storage.insert(&request).unwrap();
         }
-        
+
         let latest = storage.latest(5).unwrap();
         assert_eq!(latest.len(), 5);
-        
+
         let ids: Vec<u64> = latest.iter().map(|r| r.id).collect();
         assert_eq!(ids, vec![10, 9, 8, 7, 6]);
     }

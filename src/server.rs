@@ -1,11 +1,11 @@
 use crate::{handlers, storage::Storage};
 use axum::{
-    routing::{get, any},
     Router,
+    routing::{any, get},
 };
 use std::{env, net::SocketAddr, path::PathBuf};
 use tower_http::{services::ServeDir, trace::TraceLayer};
-use tracing::{info, Level};
+use tracing::{Level, info};
 
 pub struct ServerConfig {
     pub port: String,
@@ -16,9 +16,8 @@ pub struct ServerConfig {
 impl ServerConfig {
     pub fn from_env() -> Self {
         let port = env::var("CATCHHOOK_PORT").unwrap_or_else(|_| "43999".into());
-        let data_dir = PathBuf::from(
-            env::var("CATCHHOOK_DATA").unwrap_or_else(|_| "./catchhook-data".into()),
-        );
+        let data_dir =
+            PathBuf::from(env::var("CATCHHOOK_DATA").unwrap_or_else(|_| "./catchhook-data".into()));
         let max_reqs: usize = env::var("CATCHHOOK_MAX_REQS")
             .ok()
             .and_then(|s| s.parse().ok())
@@ -47,10 +46,7 @@ pub fn create_router(storage: Storage) -> Router {
 
     Router::new()
         .route("/health", get(handlers::health))
-        .route(
-            "/webhook",
-            any(handlers::handle_webhook),
-        )
+        .route("/webhook", any(handlers::handle_webhook))
         .route("/latest", get(handlers::get_latest))
         .route("/req/{id}", get(handlers::get_one))
         .fallback_service(static_service)
@@ -65,7 +61,7 @@ pub async fn serve(config: ServerConfig) -> anyhow::Result<()> {
     let addr: SocketAddr = format!("0.0.0.0:{}", config.port)
         .parse()
         .expect("Invalid address format");
-    
+
     info!("🚀 Catchhook running at http://{addr}");
 
     let listener = tokio::net::TcpListener::bind(addr).await?;
