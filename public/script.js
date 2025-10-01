@@ -78,7 +78,14 @@ class CatchhookApp {
   async copyWebhookUrl() {
     try {
       const url = this.elements.webhookUrl.textContent;
-      await navigator.clipboard.writeText(url);
+      
+      // Try modern clipboard API first
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url);
+      } else {
+        // Fallback for non-secure contexts or older browsers
+        prompt('Copy this URL:', url);
+      }
       
       // Visual feedback
       const button = this.elements.copyButton;
