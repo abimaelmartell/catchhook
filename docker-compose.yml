@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  catchhook:
+    image: ghcr.io/abimaelmartell/catchhook:latest
+    # Or build locally:
+    # build: .
+    container_name: catchhook
+    ports:
+      - "43999:43999"
+    volumes:
+      - catchhook-data:/app/catchhook-data
+    environment:
+      - CATCHHOOK_PORT=43999
+      - CATCHHOOK_DATA=/app/catchhook-data
+      - CATCHHOOK_MAX_REQS=10000
+    restart: unless-stopped
+
+volumes:
+  catchhook-data:

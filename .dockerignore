@@ -1,0 +1,25 @@
+# Build artifacts
+target/
+catchhook-data/
+
+# Git
+.git/
+.gitignore
+
+# CI
+.github/
+
+# Documentation
+README.md
+screenshot.png
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db

@@ -17,6 +17,21 @@ A lightweight, self-hosted webhook testing tool that captures and displays HTTP 
 
 ## Quick Start
 
+### Using Docker (Recommended)
+
+```bash
+# Using docker-compose
+docker-compose up -d
+
+# Or using docker directly
+docker run -d \
+  -p 43999:43999 \
+  -v catchhook-data:/app/catchhook-data \
+  ghcr.io/abimaelmartell/catchhook:latest
+```
+
+### From Source
+
 ```bash
 # Build and run
 cargo run --release
@@ -33,7 +48,25 @@ Environment variables:
 - `CATCHHOOK_DATA` - Data directory path (default: `./catchhook-data`)
 - `CATCHHOOK_MAX_REQS` - Maximum stored requests (default: `10000`)
 
-Example:
+### Docker Compose Example
+
+```yaml
+version: '3.8'
+
+services:
+  catchhook:
+    image: ghcr.io/abimaelmartell/catchhook:latest
+    ports:
+      - "8080:43999"
+    volumes:
+      - ./data:/app/catchhook-data
+    environment:
+      - CATCHHOOK_PORT=43999
+      - CATCHHOOK_MAX_REQS=5000
+    restart: unless-stopped
+```
+
+### From Source
 
 ```bash
 CATCHHOOK_PORT=8080 CATCHHOOK_DATA=/tmp/webhooks cargo run --release
@@ -67,6 +100,27 @@ curl -X POST http://localhost:43999/webhook \
 - **Backend**: Rust with Axum web framework
 - **Storage**: File-based with redb (embedded database)
 - **Frontend**: Vanilla JavaScript with modern CSS
+
+## Docker
+
+### Building Locally
+
+```bash
+# Build the image
+docker build -t catchhook .
+
+# Run the container
+docker run -d -p 43999:43999 -v catchhook-data:/app/catchhook-data catchhook
+```
+
+### Publishing to Registry
+
+The Docker image is automatically built and published to GitHub Container Registry on every push to main/master and on version tags.
+
+Pull the latest image:
+```bash
+docker pull ghcr.io/abimaelmartell/catchhook:latest
+```
 
 ## License
 
