@@ -1,5 +1,7 @@
 # 🪝 Catchhook
 
+[![CI](https://github.com/abimaelmartell/catchhook/actions/workflows/ci.yml/badge.svg)](https://github.com/abimaelmartell/catchhook/actions/workflows/ci.yml)
+
 A lightweight, self-hosted webhook testing tool that captures and displays HTTP requests in real-time.
 
 ## Features
