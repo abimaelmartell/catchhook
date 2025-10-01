@@ -9,6 +9,7 @@ class CatchhookApp {
     this.currentRequest = null;
     this.requests = [];
     this.refreshInterval = null;
+    this.hasError = false;
     
     this.init();
   }
@@ -124,9 +125,17 @@ class CatchhookApp {
           this.currentRequest = updatedRequest;
         }
       }
+
+      // Clear error state on successful load
+      if (this.hasError) {
+        this.hasError = false;
+        this.updateRefreshIndicator(true);
+      }
     } catch (error) {
       console.error('Failed to load requests:', error);
       this.showNotification('Failed to load requests', 'error');
+      this.hasError = true;
+      this.updateRefreshIndicator(true);
     }
   }
 
@@ -393,8 +402,15 @@ class CatchhookApp {
     const indicator = this.elements.autoRefreshIndicator;
     if (isActive) {
       indicator.classList.remove('paused');
-      indicator.title = 'Auto-refresh active (every 5s)';
+      if (this.hasError) {
+        indicator.classList.add('error');
+        indicator.title = 'Connection error - server may be down';
+      } else {
+        indicator.classList.remove('error');
+        indicator.title = 'Auto-refresh active (every 5s)';
+      }
     } else {
+      indicator.classList.remove('error');
       indicator.classList.add('paused');
       indicator.title = 'Auto-refresh paused';
     }
