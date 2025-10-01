@@ -41,7 +41,7 @@ pub async fn get_one(
         .ok_or_else(|| (StatusCode::NOT_FOUND, "not found".into()))
 }
 
-pub async fn post_webhook(
+pub async fn handle_webhook(
     State(storage): State<Storage>,
     method: Method,
     uri: axum::http::Uri,

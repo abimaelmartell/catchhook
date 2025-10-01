@@ -1,6 +1,6 @@
 use crate::{handlers, storage::Storage};
 use axum::{
-    routing::{get, post},
+    routing::{get, any},
     Router,
 };
 use std::{env, net::SocketAddr, path::PathBuf};
@@ -47,7 +47,10 @@ pub fn create_router(storage: Storage) -> Router {
 
     Router::new()
         .route("/health", get(handlers::health))
-        .route("/webhook", post(handlers::post_webhook))
+        .route(
+            "/webhook",
+            any(handlers::handle_webhook),
+        )
         .route("/latest", get(handlers::get_latest))
         .route("/req/{id}", get(handlers::get_one))
         .fallback_service(static_service)
