@@ -4,6 +4,8 @@
 
 A lightweight, self-hosted webhook testing tool that captures and displays HTTP requests in real-time.
 
+![Catchhook Screenshot](screenshot.png)
+
 ## Features
 
 - **Capture All HTTP Methods** - GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS
